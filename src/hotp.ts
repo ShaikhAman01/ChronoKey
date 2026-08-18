@@ -1,4 +1,3 @@
-//function to generate a HOTP token
 import { createHmac } from 'crypto';
 
 const NodeBuffer = (globalThis as any).Buffer;
