@@ -8,6 +8,10 @@
     "cli": "node --experimental-strip-types src/cli.ts"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1"
   }
 }
