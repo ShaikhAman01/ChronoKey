@@ -2,7 +2,7 @@ import { createHmac } from 'crypto';
 
 const NodeBuffer = (globalThis as any).Buffer;
 
-export function generateHOTP(secret: string, counter: number, digits: number = 6): string {
+export function generateHOTP(secret: string | Buffer, counter: number, digits: number = 6): string {
     if (!NodeBuffer) {
         throw new Error('Buffer is not available in this runtime.');
     }
@@ -11,8 +11,10 @@ export function generateHOTP(secret: string, counter: number, digits: number = 6
     const counterBuffer = NodeBuffer.alloc(8);
     counterBuffer.writeBigUInt64BE(BigInt(counter));
 
+    const keyBuffer = NodeBuffer.isBuffer(secret) ? secret : NodeBuffer.from(secret, 'ascii');
+
     // Creating a HMAC using secret and counter
-    const hmac = createHmac('sha1', NodeBuffer.from(secret, 'ascii'));
+    const hmac = createHmac('sha1', keyBuffer);
     hmac.update(counterBuffer);
     const hmacResult = hmac.digest();
 
