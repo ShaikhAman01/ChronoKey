@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { base32Encode, base32Decode } from './base32.ts';
-import { generateTOTP } from './totp.ts';
+import { generateTOTP, verifyTOTP } from './totp.ts';
 import { generateHOTP } from './hotp.ts';
 
 const STEP = 30;
@@ -31,6 +31,7 @@ switch (command) {
         console.log('otpauth URI:', otpauthUri(label, secretBase32));
         console.log('\nSave the secret above somewhere safe, then run:');
         console.log(`  npm run cli -- code ${secretBase32}`);
+        console.log(`  npm run cli -- verify ${secretBase32} <code>`);
         break;
     }
 
@@ -45,6 +46,24 @@ switch (command) {
         break;
     }
 
+    case 'verify': {
+        const secretBase32 = args[0];
+        const token = args[1];
+        if (!secretBase32 || !token) fail('Usage: cli verify <base32-secret> <code>');
+
+        const secretBuffer = base32Decode(secretBase32);
+        const { delta } = verifyTOTP(secretBuffer, token, { digits: 6, step: STEP });
+        if (delta === null) fail('Invalid code.');
+
+        const when = delta === 0
+            ? 'current step'
+            : delta < 0
+                ? `${-delta} step(s) late`
+                : `${delta} step(s) early`;
+        console.log(`Valid code (${when}).`);
+        break;
+    }
+
     case 'hotp': {
         const secretBase32 = args[0];
         const counterArg = args[1];
@@ -56,6 +75,6 @@ switch (command) {
     }
 
     default:
-        console.log('Usage: cli <enroll [label]|code <secret>|hotp <secret> <counter>>');
+        console.log('Usage: cli <enroll [label]|code <secret>|verify <secret> <code>|hotp <secret> <counter>>');
         process.exit(command ? 1 : 0);
 }
