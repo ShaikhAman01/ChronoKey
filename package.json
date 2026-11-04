@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test test/base32.test.ts test/totp.test.ts",
-    "cli": "node --experimental-strip-types src/cli.ts"
+    "test": "node --experimental-strip-types --test test/base32.test.ts test/hotp.test.ts test/totp.test.ts",
+    "cli": "node --experimental-strip-types src/cli.ts",
+    "typecheck": "tsc"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
