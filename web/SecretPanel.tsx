@@ -28,8 +28,8 @@ function QrCode({ data }: { data: string }) {
       aria-label="QR code for this secret, for scanning with an authenticator app"
       shapeRendering="crispEdges"
     >
-      <rect x="-2" y="-2" width={size + 4} height={size + 4} fill="#fff" />
-      <path d={path} fill="#10151C" />
+      <rect className="qr-bg" x="-2" y="-2" width={size + 4} height={size + 4} />
+      <path className="qr-modules" d={path} />
     </svg>
   );
 }
@@ -66,7 +66,7 @@ export function SecretPanel({
         aria-describedby="secret-help"
         onChange={(e) => onChange(e.target.value)}
       />
-      <p id="secret-help" className={error ? 'help is-error' : 'help'}>
+      <p id="secret-help" className={error ? 'help is-error' : 'help'} aria-live="polite">
         {error ?? 'Base32, the format authenticator apps use. Spaces are fine.'}
       </p>
       <div className="controls">

@@ -7,6 +7,8 @@ import { useDerivation, useNow } from './hooks.ts';
 import { LiveCode } from './LiveCode.tsx';
 import { SecretPanel } from './SecretPanel.tsx';
 import { TitleBlock } from './TitleBlock.tsx';
+import { VectorsPanel } from './VectorsPanel.tsx';
+import { VerifyPanel } from './VerifyPanel.tsx';
 
 export interface Settings {
   algorithm: Algorithm;
@@ -71,6 +73,11 @@ export function App() {
         </section>
 
         <Derivation steps={key ? steps : null} time={time} settings={settings} />
+
+        <section className="checks" aria-label="Checks">
+          <VerifyPanel secret={key} counter={counter} settings={settings} />
+          <VectorsPanel />
+        </section>
       </main>
 
       <footer className="sheet-foot">

@@ -1,5 +1,7 @@
 :root {
   --paper: #edf0ec;
+  --paper-press: #dfe4df;
+  --field: #fff;
   --ink: #10151c;
   --ink-2: #4a5560;
   --rule: #b4bdb8;
@@ -9,6 +11,7 @@
   --sans: 'B612', system-ui, sans-serif;
   --mono: 'B612 Mono', ui-monospace, monospace;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   color-scheme: light;
 }
 
@@ -40,6 +43,10 @@ dd,
 ol {
   margin: 0;
   padding: 0;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 a {
@@ -82,7 +89,6 @@ h1 {
   font-size: 1.0625rem;
 }
 
-/* Title block: the corner table every engineering drawing carries, holding the real settings */
 .title-block {
   display: grid;
   grid-template-columns: repeat(4, auto);
@@ -140,7 +146,6 @@ select {
 }
 
 .code {
-  /* Sized from the digit count, so 8 digits fit the same column as 6 */
   font: 700 min(7.5rem, calc(100cqi / (var(--digits) * 0.66 + 0.4))) / 1 var(--mono);
   white-space: nowrap;
 }
@@ -163,7 +168,6 @@ select {
   }
 }
 
-/* The countdown is a dimension line: one tick per second, and the thumb is the drag handle */
 .scale {
   margin-top: 1.75rem;
 }
@@ -266,7 +270,7 @@ button.primary {
   }
 
   button:not(.primary):hover {
-    background: #dfe4df;
+    background: var(--paper-press);
   }
 }
 
@@ -288,7 +292,7 @@ button.primary {
   padding: 0.6rem 0.7rem;
   border: 1.5px solid var(--ink);
   border-radius: 0;
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
   font: 400 0.9375rem var(--mono);
 }
@@ -330,7 +334,15 @@ button.primary {
 .qr-empty {
   background:
     linear-gradient(to top right, transparent calc(50% - 1px), var(--rule) 50%, transparent calc(50% + 1px)),
-    #fff;
+    var(--field);
+}
+
+.qr-bg {
+  fill: var(--field);
+}
+
+.qr-modules {
+  fill: var(--ink);
 }
 
 .derivation {
@@ -347,12 +359,24 @@ h2 {
   color: var(--ink-2);
 }
 
+.steps-host {
+  position: relative;
+}
+
 .steps {
   position: relative;
   list-style: none;
 }
 
-/* The spine linking the numbered balloons */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .steps::before {
   content: '';
   position: absolute;
@@ -361,6 +385,38 @@ h2 {
   left: calc(1.25rem - 0.75px);
   width: 1.5px;
   background: var(--ink);
+}
+
+.spine-clip {
+  position: absolute;
+  top: 1.25rem;
+  bottom: 3rem;
+  left: calc(1.25rem - 4px);
+  width: 8px;
+  overflow: hidden;
+}
+
+.spine-pulse {
+  display: block;
+  height: 100%;
+  animation: spine-run 900ms var(--ease-in-out) both;
+}
+
+.spine-pulse::before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 28px;
+  background: var(--signal);
+}
+
+@keyframes spine-run {
+  from {
+    transform: translateY(-28px);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 .step {
@@ -498,6 +554,159 @@ h3 {
   }
 }
 
+.checks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  border-top: 2px solid var(--ink);
+}
+
+.verify,
+.vectors {
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.vectors {
+  border-left: 1.5px solid var(--ink);
+}
+
+.checks h2 {
+  margin-bottom: 0.5rem;
+}
+
+.lede {
+  max-width: 60ch;
+  color: var(--ink-2);
+}
+
+.window {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-block: 1.25rem;
+}
+
+.window-cell {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+}
+
+.window-cell:disabled {
+  cursor: default;
+}
+
+.window-cell:not(:disabled).is-match,
+.window-cell:not(:disabled).is-match:hover {
+  border-color: var(--signal);
+  background: var(--signal);
+}
+
+.window-label {
+  font-size: 0.8125rem;
+}
+
+.window-code {
+  font: 700 clamp(0.9375rem, 1.5vw, 1.0625rem) var(--mono);
+}
+
+.verify label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.verify-input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--field);
+  color: var(--ink);
+  font: 700 1.25rem var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.verify-input.is-rejected {
+  border-color: var(--signal-ink);
+}
+
+.verify-input:disabled {
+  background: transparent;
+}
+
+.result {
+  min-height: 3.2em;
+  margin-top: 0.5rem;
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+
+.result.is-accepted {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.aside {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+
+.tally {
+  margin-top: 1rem;
+  font: 700 1.0625rem var(--mono);
+}
+
+.tally.is-fail {
+  color: var(--signal-ink);
+}
+
+.table-scroll {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 0.875rem var(--mono);
+  white-space: nowrap;
+}
+
+caption {
+  margin-bottom: 0.35rem;
+  color: var(--ink-2);
+  font: 400 0.875rem var(--sans);
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--rule);
+  text-align: left;
+}
+
+thead th {
+  border-bottom: 1.5px solid var(--ink);
+  font-weight: 700;
+}
+
+tbody th {
+  font-weight: 400;
+}
+
+td.is-fail {
+  background: var(--signal);
+}
+
+.expected {
+  font-size: 0.8125rem;
+}
+
 .sheet-foot {
   display: flex;
   flex-wrap: wrap;
@@ -519,6 +728,15 @@ h3 {
   }
 
   .secret {
+    border-left: 0;
+    border-top: 1.5px solid var(--ink);
+  }
+
+  .checks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vectors {
     border-left: 0;
     border-top: 1.5px solid var(--ink);
   }
@@ -574,6 +792,43 @@ h3 {
   }
 }
 
+@media (pointer: coarse) {
+  button,
+  .secret-input,
+  .verify-input {
+    min-height: 44px;
+  }
+
+  select {
+    min-height: 44px;
+  }
+
+  .title-block > div {
+    padding-bottom: 0.1rem;
+  }
+
+  .scale input {
+    --thumb: 24px;
+    height: 44px;
+  }
+
+  .scale input::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .scale input::-moz-range-track {
+    height: 44px;
+  }
+
+  .scale input::-webkit-slider-thumb {
+    height: 44px;
+  }
+
+  .scale input::-moz-range-thumb {
+    height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .digit {
     animation: digit-fade 160ms ease both;
@@ -581,6 +836,10 @@ h3 {
 
   .traces path {
     animation: none;
+  }
+
+  .spine-clip {
+    display: none;
   }
 
   button {

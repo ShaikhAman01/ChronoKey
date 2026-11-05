@@ -28,11 +28,8 @@ export function LiveCode({
 
   return (
     <div className="live">
-      <p
-        className="code"
-        style={{ '--digits': digits } as CSSProperties}
-        aria-label={code ? `Current code ${code}` : 'No code yet'}
-      >
+      <p className="code" style={{ '--digits': digits } as CSSProperties}>
+        <span className="sr-only">{code ? `Current code ${code}` : 'No code yet'}</span>
         <span className="code-digits" key={code ?? 'empty'} aria-hidden="true">
           {[...first].map((d, i) => (
             <span className="digit" key={i} style={{ animationDelay: `${i * 35}ms` }}>
@@ -55,7 +52,7 @@ export function LiveCode({
           max={step}
           value={into}
           aria-label={`Seconds into this ${step} second step`}
-          aria-valuetext={`${left} seconds left`}
+          aria-valuetext={paused ? `${left} seconds left` : 'Live, counting down'}
           style={{ '--ticks': step } as CSSProperties}
           onChange={(e) => {
             const seconds = Math.min(Number(e.target.value), step - 1);

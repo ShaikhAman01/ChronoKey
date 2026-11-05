@@ -5,7 +5,6 @@ export interface HotpOptions {
     algorithm?: Algorithm;
 }
 
-// Every intermediate value of RFC 4226 section 5.3, so the playground can show each step.
 export interface HotpSteps {
     counter: bigint;
     counterBytes: Uint8Array;

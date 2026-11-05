@@ -56,7 +56,6 @@ function Step({
   );
 }
 
-// Orange wires from the picked HMAC bytes down to the extracted bytes, measured from the DOM
 function Traces({ host, steps }: { host: HTMLElement | null; steps: HotpSteps }) {
   const [wires, setWires] = useState<{ d: string; length: number; x1: number; y1: number; x2: number; y2: number }[]>([]);
   const { offset, counter } = steps;
@@ -136,103 +135,107 @@ export function Derivation({
     <section className="derivation" aria-labelledby="derivation-title">
       <h2 id="derivation-title">How this code is made</h2>
 
-      <ol className="steps" ref={setHost}>
+      <div className="steps-host" ref={setHost}>
         {host && <Traces host={host} steps={steps} />}
+        <div className="spine-clip" aria-hidden="true">
+          <span className="spine-pulse" key={steps.counter.toString()} />
+        </div>
+        <ol className="steps" role="list">
+          <Step
+            n={1}
+            title="Read the clock"
+            note="Seconds since 1 January 1970, UTC. Your phone and the server both know this, so neither has to send it to the other."
+          >
+            <p className="figure">{unix}</p>
+            <p className="figure-sub">{new Date(unix * 1000).toISOString().replace('T', ' ').slice(0, 19)} UTC</p>
+          </Step>
 
-        <Step
-          n={1}
-          title="Read the clock"
-          note="Seconds since 1 January 1970, UTC. Your phone and the server both know this, so neither has to send it to the other."
-        >
-          <p className="figure">{unix}</p>
-          <p className="figure-sub">{new Date(unix * 1000).toISOString().replace('T', ' ').slice(0, 19)} UTC</p>
-        </Step>
+          <Step
+            n={2}
+            title="Count the steps"
+            note={`Rounded down. This number only changes every ${step} seconds, which is why the code stays the same for that long.`}
+          >
+            <p className="figure">
+              {unix} ÷ {step} = <strong>{steps.counter.toString()}</strong>
+            </p>
+          </Step>
 
-        <Step
-          n={2}
-          title="Count the steps"
-          note={`Rounded down. This number only changes every ${step} seconds, which is why the code stays the same for that long.`}
-        >
-          <p className="figure">
-            {unix} ÷ {step} = <strong>{steps.counter.toString()}</strong>
-          </p>
-        </Step>
+          <Step
+            n={3}
+            title="Write it as 8 bytes"
+            note="The same counter in hexadecimal, most significant byte first. This is the message that gets signed."
+          >
+            <div className="bytes bytes-counter">
+              {[...steps.counterBytes].map((b, i) => (
+                <Byte key={i} value={b} />
+              ))}
+            </div>
+          </Step>
 
-        <Step
-          n={3}
-          title="Write it as 8 bytes"
-          note="The same counter in hexadecimal, most significant byte first. This is the message that gets signed."
-        >
-          <div className="bytes bytes-counter">
-            {[...steps.counterBytes].map((b, i) => (
-              <Byte key={i} value={b} />
-            ))}
-          </div>
-        </Step>
+          <Step
+            n={4}
+            title="Mix in the secret"
+            note={`HMAC-${algorithm} signs the counter with your secret. Without the secret, nobody can work out these ${steps.hmac.length} bytes, even knowing the time.`}
+          >
+            <div className="bytes">
+              {[...steps.hmac].map((b, i) => (
+                <Byte
+                  key={i}
+                  value={b}
+                  index={i}
+                  picked={i >= steps.offset && i < steps.offset + 4}
+                  nibble={i === steps.hmac.length - 1}
+                  data-hmac={i}
+                />
+              ))}
+            </div>
+          </Step>
 
-        <Step
-          n={4}
-          title="Mix in the secret"
-          note={`HMAC-${algorithm} signs the counter with your secret. Without the secret, nobody can work out these ${steps.hmac.length} bytes, even knowing the time.`}
-        >
-          <div className="bytes">
-            {[...steps.hmac].map((b, i) => (
-              <Byte
-                key={i}
-                value={b}
-                index={i}
-                picked={i >= steps.offset && i < steps.offset + 4}
-                nibble={i === steps.hmac.length - 1}
-                data-hmac={i}
-              />
-            ))}
-          </div>
-        </Step>
+          <Step
+            n={5}
+            className="step-slice"
+            title="Pick 4 of them"
+            note={`The last hex digit of the last byte is ${hex(last)[1]}${steps.offset > 9 ? `, which means ${steps.offset}` : ''}. So the 4 bytes starting at position ${steps.offset} are kept.`}
+          >
+            <div className="bytes bytes-slice">
+              {[...steps.slice].map((b, i) => (
+                <Byte key={i} value={b} picked data-slice={i} />
+              ))}
+            </div>
+          </Step>
 
-        <Step
-          n={5}
-          className="step-slice"
-          title="Pick 4 of them"
-          note={`The last hex digit of the last byte is ${hex(last)[1]}${steps.offset > 9 ? `, which means ${steps.offset}` : ''}. So the 4 bytes starting at position ${steps.offset} are kept.`}
-        >
-          <div className="bytes bytes-slice">
-            {[...steps.slice].map((b, i) => (
-              <Byte key={i} value={b} picked data-slice={i} />
-            ))}
-          </div>
-        </Step>
+          <Step
+            n={6}
+            title="Drop the top bit"
+            note="Clearing the first bit keeps the number positive in every programming language. What's left is a plain integer."
+          >
+            <p className="bits">
+              <span className="dropped">{bits[0]}</span>
+              {bits.slice(1, 8)} {bits.slice(8, 16)} {bits.slice(16, 24)} {bits.slice(24)}
+            </p>
+            <p className="figure">= <strong>{steps.binary}</strong></p>
+          </Step>
 
-        <Step
-          n={6}
-          title="Drop the top bit"
-          note="Clearing the first bit keeps the number positive in every programming language. What's left is a plain integer."
-        >
-          <p className="bits">
-            <span className="dropped">{bits[0]}</span>
-            {bits.slice(1, 8)} {bits.slice(8, 16)} {bits.slice(16, 24)} {bits.slice(24)}
-          </p>
-          <p className="figure">= <strong>{steps.binary}</strong></p>
-        </Step>
-
-        <Step
-          n={7}
-          title="Keep the last digits"
-          note={
-            <>
-              Dividing by 10<sup>{digits}</sup> and keeping the remainder leaves the last {digits} digits. If
-              it comes out short, zeros are added at the front.
-            </>
-          }
-        >
-          <p className="figure">
-            {binaryText.slice(0, binaryText.length - kept)}
-            <mark>{binaryText.slice(binaryText.length - kept)}</mark>
-          </p>
-          <p className="figure-sub">
-            The code is <strong>{steps.code}</strong>
-          </p>
-        </Step>
-      </ol>
+          <Step
+            n={7}
+            title="Keep the last digits"
+            note={
+              <>
+                Dividing by 10<sup>{digits}</sup> and keeping the remainder leaves the last {digits} digits. If
+                it comes out short, zeros are added at the front.
+              </>
+            }
+          >
+            <p className="figure">
+              {binaryText.slice(0, binaryText.length - kept)}
+              <mark>{binaryText.slice(binaryText.length - kept)}</mark>
+            </p>
+            <p className="figure-sub">
+              The code is <strong>{steps.code}</strong>
+            </p>
+          </Step>
+        </ol>
+      </div>
     </section>
   );
 }

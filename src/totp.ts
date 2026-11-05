@@ -37,7 +37,6 @@ export async function generateTOTP(secret: string | Uint8Array, options: TotpOpt
     return (await totpSteps(secret, options)).code;
 }
 
-// Compares every byte even after a mismatch, so the time taken does not reveal how much of the code was right.
 function constantTimeEqual(a: string, b: string): boolean {
     if (a.length !== b.length) return false;
     let diff = 0;
@@ -58,7 +57,7 @@ export async function verifyTOTP(
         return { valid: false, delta: null };
     }
 
-    // Check the whole window instead of returning on the first match, again so timing stays uniform
+    // Check the whole window instead of returning on the first match, so timing stays uniform
     let delta: number | null = null;
     for (let offset = -window; offset <= window; offset++) {
         const candidate = await generateTOTP(secret, {
