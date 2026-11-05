@@ -1,20 +1,9 @@
-import { randomBytes } from 'node:crypto';
 import { base32Encode, base32Decode } from './base32.ts';
-import { generateTOTP, verifyTOTP } from './totp.ts';
+import { generateTOTP, secondsRemaining, verifyTOTP } from './totp.ts';
 import { generateHOTP } from './hotp.ts';
+import { otpauthUri } from './otpauth.ts';
 
 const STEP = 30;
-
-function otpauthUri(label: string, secretBase32: string, issuer = 'ChronoKey'): string {
-    const params = new URLSearchParams({
-        secret: secretBase32,
-        issuer,
-        algorithm: 'SHA1',
-        digits: '6',
-        period: String(STEP),
-    });
-    return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?${params.toString()}`;
-}
 
 function fail(message: string): never {
     console.error(message);
@@ -26,9 +15,9 @@ const [, , command, ...args] = process.argv;
 switch (command) {
     case 'enroll': {
         const label = args[0] ?? 'user@example.com';
-        const secretBase32 = base32Encode(randomBytes(20));
+        const secretBase32 = base32Encode(crypto.getRandomValues(new Uint8Array(20)));
         console.log('Secret (base32):', secretBase32);
-        console.log('otpauth URI:', otpauthUri(label, secretBase32));
+        console.log('otpauth URI:', otpauthUri({ label, secretBase32, step: STEP }));
         console.log('\nSave the secret above somewhere safe, then run:');
         console.log(`  npm run cli -- code ${secretBase32}`);
         console.log(`  npm run cli -- verify ${secretBase32} <code>`);
@@ -40,8 +29,8 @@ switch (command) {
         if (!secretBase32) fail('Usage: cli code <base32-secret>');
 
         const secretBuffer = base32Decode(secretBase32);
-        const code = generateTOTP(secretBuffer, 6, STEP);
-        const remaining = STEP - (Math.floor(Date.now() / 1000) % STEP);
+        const code = await generateTOTP(secretBuffer, { step: STEP });
+        const remaining = secondsRemaining(Date.now(), STEP);
         console.log(`Code: ${code} (valid for ${remaining}s)`);
         break;
     }
@@ -52,7 +41,7 @@ switch (command) {
         if (!secretBase32 || !token) fail('Usage: cli verify <base32-secret> <code>');
 
         const secretBuffer = base32Decode(secretBase32);
-        const { delta } = verifyTOTP(secretBuffer, token, { digits: 6, step: STEP });
+        const { delta } = await verifyTOTP(secretBuffer, token, { step: STEP });
         if (delta === null) fail('Invalid code.');
 
         const when = delta === 0
@@ -70,7 +59,7 @@ switch (command) {
         if (!secretBase32 || counterArg === undefined) fail('Usage: cli hotp <base32-secret> <counter>');
 
         const secretBuffer = base32Decode(secretBase32);
-        console.log('Code:', generateHOTP(secretBuffer, Number(counterArg), 6));
+        console.log('Code:', await generateHOTP(secretBuffer, BigInt(counterArg)));
         break;
     }
 

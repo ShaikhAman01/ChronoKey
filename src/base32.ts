@@ -1,14 +1,13 @@
 // RFC 4648 base32 (the encoding used by otpauth:// secrets / QR codes)
-const NodeBuffer = (globalThis as any).Buffer;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
-export function base32Encode(data: Buffer): string {
+export function base32Encode(data: Uint8Array): string {
     let bits = 0;
     let value = 0;
     let output = '';
 
     for (const byte of data) {
-        value = (value << 8) | byte;
+        value = ((value << 8) | byte) & 0xffff;
         bits += 8;
         while (bits >= 5) {
             output += ALPHABET[(value >>> (bits - 5)) & 0x1f];
@@ -27,8 +26,9 @@ export function base32Encode(data: Buffer): string {
     return output;
 }
 
-export function base32Decode(input: string): Buffer {
-    const clean = input.toUpperCase().replace(/=+$/, '');
+// Authenticator apps show secrets in lowercase groups ("jbsw y3dp ..."), so spaces and dashes are ignored.
+export function base32Decode(input: string): Uint8Array {
+    const clean = input.toUpperCase().replace(/[\s-]/g, '').replace(/=+$/, '');
     let bits = 0;
     let value = 0;
     const bytes: number[] = [];
@@ -38,7 +38,7 @@ export function base32Decode(input: string): Buffer {
         if (idx === -1) {
             throw new Error(`Invalid base32 character: ${char}`);
         }
-        value = (value << 5) | idx;
+        value = ((value << 5) | idx) & 0xffff;
         bits += 5;
         if (bits >= 8) {
             bytes.push((value >>> (bits - 8)) & 0xff);
@@ -46,5 +46,5 @@ export function base32Decode(input: string): Buffer {
         }
     }
 
-    return NodeBuffer.from(bytes);
+    return Uint8Array.from(bytes);
 }

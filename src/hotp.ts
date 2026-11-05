@@ -1,43 +1,77 @@
-import { createHmac } from 'crypto';
+export type Algorithm = 'SHA-1' | 'SHA-256' | 'SHA-512';
 
-const NodeBuffer = (globalThis as any).Buffer;
+export interface HotpOptions {
+    digits?: number;
+    algorithm?: Algorithm;
+}
 
-export function generateHOTP(secret: string | Buffer, counter: number, digits: number = 6): string {
-    if (!NodeBuffer) {
-        throw new Error('Buffer is not available in this runtime.');
+export interface HotpSteps {
+    counter: bigint;
+    counterBytes: Uint8Array;
+    hmac: Uint8Array;
+    offset: number;
+    slice: Uint8Array;
+    binary: number;
+    modulus: number;
+    code: string;
+}
+
+const encoder = new TextEncoder();
+
+export function toKey(secret: string | Uint8Array): Uint8Array {
+    return typeof secret === 'string' ? encoder.encode(secret) : secret;
+}
+
+function checkDigits(digits: number): void {
+    if (!Number.isInteger(digits) || digits < 6 || digits > 10) {
+        throw new RangeError('digits must be an integer between 6 and 10');
+    }
+}
+
+export async function hmac(algorithm: Algorithm, key: Uint8Array, message: Uint8Array): Promise<Uint8Array> {
+    if (key.length === 0) {
+        throw new Error('Secret must not be empty');
+    }
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        key as Uint8Array<ArrayBuffer>,
+        { name: 'HMAC', hash: algorithm },
+        false,
+        ['sign'],
+    );
+    return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, message as Uint8Array<ArrayBuffer>));
+}
+
+export async function hotpSteps(
+    secret: string | Uint8Array,
+    counter: number | bigint,
+    { digits = 6, algorithm = 'SHA-1' }: HotpOptions = {},
+): Promise<HotpSteps> {
+    checkDigits(digits);
+    const big = BigInt(counter);
+    if (big < 0n || big > 0xffff_ffff_ffff_ffffn) {
+        throw new RangeError('counter must fit in an unsigned 64-bit integer');
     }
 
-    // Converting counter to a buffer
-    const counterBuffer = NodeBuffer.alloc(8);
-    counterBuffer.writeBigUInt64BE(BigInt(counter));
+    const counterBytes = new Uint8Array(8);
+    new DataView(counterBytes.buffer).setBigUint64(0, big);
 
-    const keyBuffer = NodeBuffer.isBuffer(secret) ? secret : NodeBuffer.from(secret, 'ascii');
+    const mac = await hmac(algorithm, toKey(secret), counterBytes);
 
-    // Creating a HMAC using secret and counter
-    const hmac = createHmac('sha1', keyBuffer);
-    hmac.update(counterBuffer);
-    const hmacResult = hmac.digest();
+    // Dynamic truncation: the low nibble of the last byte picks where to read 4 bytes from
+    const offset = mac[mac.length - 1]! & 0x0f;
+    const slice = mac.slice(offset, offset + 4);
+    const binary = new DataView(slice.buffer).getUint32(0) & 0x7fff_ffff;
+    const modulus = 10 ** digits;
+    const code = (binary % modulus).toString().padStart(digits, '0');
 
-    // Extracting dynamic binary code
-    const lastByte = hmacResult[hmacResult.length - 1];
-    if (lastByte === undefined) throw new Error('Last byte of HMAC result is undefined');
-    const offset = lastByte & 0x0f;
-    
-    const b0 = hmacResult[offset];
-    if (b0 === undefined) throw new Error('Byte at offset is undefined');
-    const b1 = hmacResult[offset + 1];
-    if (b1 === undefined) throw new Error('Byte at offset + 1 is undefined');
-    const b2 = hmacResult[offset + 2];
-    if (b2 === undefined) throw new Error('Byte at offset + 2 is undefined');
-    const b3 = hmacResult[offset + 3];
-    if (b3 === undefined) throw new Error('Byte at offset + 3 is undefined');
-    
-    const dbc = ((b0 & 0x7f) << 24) |
-                ((b1 & 0xff) << 16) |
-                ((b2 & 0xff) << 8) |
-                (b3 & 0xff);
+    return { counter: big, counterBytes, hmac: mac, offset, slice, binary, modulus, code };
+}
 
-    // Generating th HOTP token
-    const hotp = dbc % (10 ** digits);
-    return hotp.toString().padStart(digits, '0');
+export async function generateHOTP(
+    secret: string | Uint8Array,
+    counter: number | bigint,
+    options: HotpOptions = {},
+): Promise<string> {
+    return (await hotpSteps(secret, counter, options)).code;
 }
