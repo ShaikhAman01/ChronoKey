@@ -1,19 +1,9 @@
 import { base32Encode, base32Decode } from './base32.ts';
 import { generateTOTP, secondsRemaining, verifyTOTP } from './totp.ts';
 import { generateHOTP } from './hotp.ts';
+import { otpauthUri } from './otpauth.ts';
 
 const STEP = 30;
-
-function otpauthUri(label: string, secretBase32: string, issuer = 'ChronoKey'): string {
-    const params = new URLSearchParams({
-        secret: secretBase32,
-        issuer,
-        algorithm: 'SHA1',
-        digits: '6',
-        period: String(STEP),
-    });
-    return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?${params.toString()}`;
-}
 
 function fail(message: string): never {
     console.error(message);
@@ -27,7 +17,7 @@ switch (command) {
         const label = args[0] ?? 'user@example.com';
         const secretBase32 = base32Encode(crypto.getRandomValues(new Uint8Array(20)));
         console.log('Secret (base32):', secretBase32);
-        console.log('otpauth URI:', otpauthUri(label, secretBase32));
+        console.log('otpauth URI:', otpauthUri({ label, secretBase32, step: STEP }));
         console.log('\nSave the secret above somewhere safe, then run:');
         console.log(`  npm run cli -- code ${secretBase32}`);
         console.log(`  npm run cli -- verify ${secretBase32} <code>`);
