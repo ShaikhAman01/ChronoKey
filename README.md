@@ -2,6 +2,8 @@
 
 An interactive look inside two-factor codes. Watch a TOTP code being built from the clock and a secret, one step at a time, and scan the QR code to see your phone produce the same digits.
 
+**Live:** [chronokey.shaikhaman.in](https://chronokey.shaikhaman.in)
+
 ![The ChronoKey page, showing a live code and each step of the derivation](docs/chronokey.png)
 
 **Stack:** TypeScript, React, Vite, Web Crypto. The core has no runtime dependencies and runs in the browser and in Node.
