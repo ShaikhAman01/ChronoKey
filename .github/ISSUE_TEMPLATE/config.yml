@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Try ChronoKey
+    url: https://chronokey.shaikhaman.in
+    about: The live site. Please confirm the problem there before opening an issue.
+  - name: Security issue
+    url: mailto:shaikhaman.0020@gmail.com
+    about: Please report anything security related privately by email rather than in a public issue.

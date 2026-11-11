@@ -85,11 +85,22 @@ export function App() {
           Everything runs in this browser. Nothing you type is sent or saved. This is a learning
           tool, so don't paste secrets from real accounts.
         </p>
-        <p>
-          Built to <a href="https://www.rfc-editor.org/rfc/rfc6238">RFC 6238</a> and{' '}
-          <a href="https://www.rfc-editor.org/rfc/rfc4226">RFC 4226</a>.{' '}
-          <a href="https://github.com/ShaikhAman01/ChronoKey">Source on GitHub</a>.
-        </p>
+        <div className="foot-links">
+          <p>
+            Built to <a href="https://www.rfc-editor.org/rfc/rfc6238">RFC 6238</a> and{' '}
+            <a href="https://www.rfc-editor.org/rfc/rfc4226">RFC 4226</a>.{' '}
+            <a href="https://github.com/ShaikhAman01/ChronoKey">Source on GitHub</a>.
+          </p>
+          <p>
+            <a href="https://github.com/ShaikhAman01/ChronoKey/issues/new?template=bug_report.yml">
+              Report a bug
+            </a>{' '}
+            ·{' '}
+            <a href="https://github.com/ShaikhAman01/ChronoKey/issues/new?template=feature_request.yml">
+              Suggest a feature
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );

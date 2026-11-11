@@ -1,0 +1,95 @@
+@font-face {
+  font-family: 'B612';
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/b612-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'B612 Mono';
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/b612-mono-latin-700-normal.woff2') format('woff2');
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: #edf0ec;
+  background-image:
+    linear-gradient(rgb(16 21 28 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(16 21 28 / 0.045) 1px, transparent 1px);
+  background-size: 8px 8px;
+  color: #10151c;
+  font: 400 1rem/1.55 'B612', system-ui, sans-serif;
+}
+
+main {
+  width: min(100%, 30rem);
+  box-sizing: border-box;
+  border: 2px solid #10151c;
+  background: #edf0ec;
+  padding: clamp(1.25rem, 5vw, 2rem);
+}
+
+p,
+h1 {
+  margin: 0;
+}
+
+.brand {
+  padding-bottom: 0.75rem;
+  border-bottom: 1.5px solid #10151c;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.code {
+  margin-top: 1.5rem;
+  font: 700 clamp(4rem, 18vw, 6rem)/1 'B612 Mono', ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+
+.left {
+  margin-top: 0.5rem;
+  color: #c23400;
+  font: 700 0.875rem/1.4 'B612 Mono', ui-monospace, monospace;
+}
+
+h1 {
+  margin-top: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+h1 + p {
+  margin-top: 0.25rem;
+  color: #4a5560;
+}
+
+a {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.5rem 0.875rem;
+  border: 1.5px solid #10151c;
+  background: #fff;
+  color: #10151c;
+  text-decoration: none;
+}
+
+a:hover {
+  background: #dfe4df;
+}
+
+a:focus-visible {
+  outline: 2px solid #c23400;
+  outline-offset: 2px;
+}

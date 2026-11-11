@@ -1,0 +1,93 @@
+name: Bug report
+description: Something on the page is wrong or behaving oddly
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please never paste a secret from a real account here, use the default one or make up a new one.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - Live code or countdown
+        - Settings (hash, digits, step)
+        - Secret or QR code
+        - Step-by-step derivation
+        - Verify a code
+        - Test vectors
+        - CLI
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+      placeholder: With SHA-512 and 8 digits, my authenticator app shows a different code.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Set the hash to SHA-512
+        2. Set digits to 8
+        3. Scan the QR code
+        4. The codes do not match
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Brave
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device and OS
+      options:
+        - Windows desktop or laptop
+        - macOS desktop or laptop
+        - Linux desktop or laptop
+        - Android phone or tablet
+        - iPhone or iPad
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors or screenshots
+      description: Open devtools, check the Console tab, and paste anything red.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I searched the existing issues and this is not already reported
+          required: true
+        - label: I did not include a secret from a real account
+          required: true

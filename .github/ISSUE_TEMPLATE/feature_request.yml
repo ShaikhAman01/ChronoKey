@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest an improvement or something new to explain
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. This is a portfolio project maintained by one person, so small and well shaped beats large and vague.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What would this touch?
+      options:
+        - Live code or countdown
+        - Settings (hash, digits, step)
+        - Secret or QR code
+        - Step-by-step derivation
+        - Verify a code
+        - Test vectors
+        - CLI
+        - Accessibility
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What do you want to be able to do?
+      placeholder: I would like to see how HOTP counters drift out of sync.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it make ChronoKey better?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I searched the existing issues and this is not already suggested
+          required: true
